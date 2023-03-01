@@ -1,176 +1,84 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
+import "./Calendar.css";
 
-import classNames from "classnames/bind";
+function Calendar() {
+  const [month, setMonth] = useState(new Date().getMonth());
+  const [year, setYear] = useState(new Date().getFullYear());
 
-import style from "./Calendar.css";
-
-const cx = classNames.bind(style);
-
-const Calendar = () => {
-  const today = {
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
-    date: new Date().getDate(), // 날짜
-    day: new Date().getDay(), // 요일
+  const prevMonth = () => {
+    setMonth((prevMonth) => prevMonth - 1);
+    if (month === 0) {
+      setYear((prevYear) => prevYear - 1);
+      setMonth(11);
+    }
   };
 
-  const week = ["일", "월", "화", "수", "목", "금", "토"];
-
-  const [selectedYear, setSelectedYear] = useState(today.year);
-  const [selectedMonth, setSelectedMonth] = useState(today.month);
-
-  const dateTotalCount = new Date(selectedYear, selectedMonth, 0).getDate(); // 선택된 연도, 날의 마지막 날짜
-
-  const prevMonth = useCallback(() => {
-    if (selectedMonth === 1) {
-      setSelectedMonth(12);
-      setSelectedYear(selectedYear - 1);
-    } else {
-      setSelectedMonth(selectedMonth - 1);
+  const nextMonth = () => {
+    setMonth((prevMonth) => prevMonth + 1);
+    if (month === 11) {
+      setYear((prevYear) => prevYear + 1);
+      setMonth(0);
     }
-  }, [selectedMonth]);
-
-  const nextMonth = useCallback(() => {
-    if (selectedMonth === 12) {
-      setSelectedMonth(1);
-      setSelectedYear(selectedYear + 1);
-    } else {
-      setSelectedMonth(selectedMonth + 1);
-    }
-  }, [selectedMonth]);
-
-  const monthControl = useCallback(() => {
-    let monthArr = [];
-    for (let i = 0; i < 12; i++) {
-      monthArr.push(
-        <option key={i + 1} value={i + 1}>
-          {i + 1}월
-        </option>
-      );
-    }
-    return (
-      <select onChange={changeSelectMonth} value={selectedMonth}>
-        {monthArr}
-      </select>
-    );
-  }, [selectedMonth]);
-
-  const yearControl = useCallback(() => {
-    //연도 선택박스에서 고르기
-    let yearArr = [];
-    const startYear = today.year - 10; //현재 년도부터 10년전 까지만
-    const endYear = today.year + 10; //현재 년도부터 10년후 까지만
-    for (let i = startYear; i < endYear + 1; i++) {
-      yearArr.push(
-        <option key={i} value={i}>
-          {i}년
-        </option>
-      );
-    }
-    return (
-      <select
-        // className="yearSelect"
-        onChange={changeSelectYear}
-        value={selectedYear}
-      >
-        {yearArr}
-      </select>
-    );
-  }, [selectedYear]);
-
-  const changeSelectMonth = (e) => {
-    setSelectedMonth(Number(e.target.value));
   };
 
-  const changeSelectYear = (e) => {
-    setSelectedYear(Number(e.target.value));
+  const daysInMonth = (month, year) => {
+    return new Date(year, month + 1, 0).getDate();
   };
 
-  const returnWeek = useCallback(() => {
-    let weekArr = [];
-    week.forEach((v) => {
-      weekArr.push(
-        <div
-          key={v}
-          className={cx(
-            { weekday: true },
-            { sunday: v === "일" },
-            { saturday: v === "토" }
-          )}
-        >
-          {v}
-        </div>
-      );
-    });
-    return weekArr;
-  }, []);
+  const firstDayOfMonth = (month, year) => {
+    return new Date(year, month, 1).getDay();
+  };
 
-  const returnDay = useCallback(() => {
-    let dayArr = [];
+  const renderCalendar = () => {
+    const days = daysInMonth(month, year);
+    const firstDay = firstDayOfMonth(month, year);
+    const calendar = [];
 
-    for (const nowDay of week) {
-      const day = new Date(selectedYear, selectedMonth - 1, 1).getDay();
+    let date = 1;
 
-      if (week[day] === nowDay) {
-        for (let i = 0; i < dateTotalCount; i++) {
-          dayArr.push(
-            <div
-              key={i + 1}
-              className={cx(
-                {
-                  //오늘 날짜일 때 표시할 스타일 클라스네임
-                  today:
-                    today.year === selectedYear &&
-                    today.month === selectedMonth &&
-                    today.date === i + 1,
-                },
-                { weekday: true }, //전체 날짜 스타일
-                {
-                  //전체 일요일 스타일
-                  sunday:
-                    new Date(
-                      selectedYear,
-                      selectedMonth - 1,
-                      i + 1
-                    ).getDay() === 0,
-                },
-                {
-                  //전체 토요일 스타일
-                  saturday:
-                    new Date(
-                      selectedYear,
-                      selectedMonth - 1,
-                      i + 1
-                    ).getDay() === 6,
-                }
-              )}
-            >
-              {i + 1}
-            </div>
-          );
+    for (let i = 0; i < 6; i++) {
+      const week = [];
+
+      for (let j = 0; j < 7; j++) {
+        if (i === 0 && j < firstDay) {
+          week.push(<div className="empty"></div>);
+        } else if (date > days) {
+          break;
+        } else {
+          week.push(<div className="date">{date}</div>);
+          date++;
         }
-      } else {
-        dayArr.push(<div className="weekday"></div>);
       }
+
+      calendar.push(<div className="week">{week}</div>);
     }
-    return dayArr;
-  }, [selectedYear, selectedMonth, dateTotalCount]);
+
+    return calendar;
+  };
 
   return (
-    <div className="container">
-      <div className="title">
-        <h3>
-          {yearControl()}년 {monthControl()}월
-        </h3>
-        <div className="pagination">
-          <button onClick={prevMonth}>◀︎</button>
-          <button onClick={nextMonth}>▶︎</button>
-        </div>
+    <div className="calendar">
+      <div className="header">
+        <button onClick={prevMonth} className="arrow">
+          &lt;
+        </button>
+        <h2 className="title">{`${year}년 ${month + 1}월`}</h2>
+        <button onClick={nextMonth} className="arrow">
+          &gt;
+        </button>
       </div>
-      <div className="week">{returnWeek()}</div>
-      <div className="date">{returnDay()}</div>
+      <div className="days">
+        <div className="day">일</div>
+        <div className="day">월</div>
+        <div className="day">화</div>
+        <div className="day">수</div>
+        <div className="day">목</div>
+        <div className="day">금</div>
+        <div className="day">토</div>
+      </div>
+      {renderCalendar()}
     </div>
   );
-};
+}
 
 export default Calendar;

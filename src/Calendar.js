@@ -2,81 +2,128 @@ import React, { useState } from "react";
 import "./Calendar.css";
 
 function Calendar() {
-  const [month, setMonth] = useState(new Date().getMonth());
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
-  const prevMonth = () => {
-    setMonth((prevMonth) => prevMonth - 1);
-    if (month === 0) {
-      setYear((prevYear) => prevYear - 1);
-      setMonth(11);
-    }
-  };
+  function nextMonth() {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+    );
+  }
 
-  const nextMonth = () => {
-    setMonth((prevMonth) => prevMonth + 1);
-    if (month === 11) {
-      setYear((prevYear) => prevYear + 1);
-      setMonth(0);
-    }
-  };
+  function prevMonth() {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+    );
+  }
 
-  const daysInMonth = (month, year) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const firstDayOfMonth = (month, year) => {
-    return new Date(year, month, 1).getDay();
-  };
-
-  const renderCalendar = () => {
-    const days = daysInMonth(month, year);
-    const firstDay = firstDayOfMonth(month, year);
-    const calendar = [];
-
-    let date = 1;
-
-    for (let i = 0; i < 6; i++) {
-      const week = [];
-
-      for (let j = 0; j < 7; j++) {
-        if (i === 0 && j < firstDay) {
-          week.push(<div className="empty"></div>);
-        } else if (date > days) {
-          break;
-        } else {
-          week.push(<div className="date">{date}</div>);
-          date++;
-        }
+  function handleDateClick(day) {
+    if (!startDate) {
+      setStartDate(day);
+    } else if (!endDate) {
+      if (day >= startDate) {
+        setEndDate(day);
+      } else {
+        setEndDate(startDate);
+        setStartDate(day);
       }
+    } else {
+      setStartDate(day);
+      setEndDate(null);
+    }
+  }
+  function renderMonth(date) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const monthName = new Intl.DateTimeFormat("en-US", {
+      month: "long",
+    }).format(date);
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days = [];
 
-      calendar.push(<div className="week">{week}</div>);
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(i);
     }
 
-    return calendar;
-  };
+    const blanks = Array(firstDay).fill(null);
+    const allDays = [...blanks, ...days];
+    const rows = [];
 
+    while (allDays.length) {
+      rows.push(allDays.splice(0, 7));
+    }
+
+    return (
+      <div className="month">
+        <h2>
+          {monthName} {year}
+        </h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Sun</th>
+              <th>Mon</th>
+              <th>Tue</th>
+              <th>Wed</th>
+              <th>Thu</th>
+              <th>Fri</th>
+              <th>Sat</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={index}>
+                {row.map((day, index) => {
+                  const currentDate = new Date(year, month, day);
+                  const isStartDate =
+                    currentDate.getTime() === startDate?.getTime();
+                  const isEndDate =
+                    currentDate.getTime() === endDate?.getTime();
+                  const isBetweenDates =
+                    currentDate > startDate && currentDate < endDate;
+                  const className = isStartDate
+                    ? "start-date"
+                    : isEndDate
+                    ? "end-date"
+                    : isBetweenDates
+                    ? "between-dates"
+                    : "";
+
+                  return (
+                    <td
+                      key={index}
+                      className={className}
+                      onClick={() =>
+                        handleDateClick(new Date(year, month, day))
+                      }
+                    >
+                      {day}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
   return (
     <div className="calendar">
-      <div className="header">
-        <button onClick={prevMonth} className="arrow">
-          &lt;
-        </button>
-        <h2 className="title">{`${year}년 ${month + 1}월`}</h2>
-        <button onClick={nextMonth} className="arrow">
-          &gt;
-        </button>
-      </div>
-      <div className="days">
-        <div className="day">일</div>
-        <div className="day">월</div>
-        <div className="day">화</div>
-        <div className="day">수</div>
-        <div className="day">목</div>
-        <div className="day">금</div>
-        <div className="day">토</div>
-      </div>
-      {renderCalendar()}
+      {renderMonth(currentDate)}
+      {renderMonth(
+        new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+      )}
+      <button onClick={prevMonth}>Prev Month</button>
+      <button onClick={nextMonth}>Next Month</button>
+      {startDate && (
+        <div>
+          Selected date range: {startDate.toLocaleDateString()} -{" "}
+          {endDate ? endDate.toLocaleDateString() : ""}
+        </div>
+      )}
     </div>
   );
 }

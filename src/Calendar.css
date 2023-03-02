@@ -1,74 +1,28 @@
 .calendar {
+  display: flex;
+  flex-direction: row;
+}
+
+.month {
+  margin: 10px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+th {
+  border: 1px solid black;
+  padding: 5px;
+  font-weight: bold;
+}
+
+.between-dates {
+  background-color: red;
   border: 1px solid #ccc;
-  width: 280px;
-  font-family: Arial, sans-serif;
-  background-color: #fff;
-  margin: 0 auto;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  background-color: #eee;
-}
-
-.arrow {
-  background-color: transparent;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.days {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
-}
-
-.day {
-  flex-basis: calc(100% / 7);
-  text-align: center;
-  font-size: 14px;
-  font-weight: bold;
-  color: #666;
-}
-
-.week {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 10px;
-}
-
-.empty {
-  flex-basis: calc(100% / 7);
-  background-color: #f5f5f5;
-}
-
-.date {
-  flex-basis: calc(100% / 7);
-  text-align: center;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-}
-
-.date:hover {
-  background-color: #eee;
-}
-
-.today {
-  background-color: #e0e0e0;
-}
-
-.selected {
-  background-color: #2196f3;
-  color: #fff;
 }
